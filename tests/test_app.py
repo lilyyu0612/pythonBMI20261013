@@ -15,9 +15,10 @@ class BmiAppTests(unittest.TestCase):
         self.assertIn("計算你的 BMI", page)
 
     def test_calculation_and_advice(self):
-        response = self.client.post("/", data={"height": "170", "weight": "65"})
+        response = self.client.post("/", data={"name": "王小明", "height": "170", "weight": "65"})
         page = response.get_data(as_text=True)
         self.assertIn("22.5", page)
+        self.assertIn("王小明，你的體位屬於", page)
         self.assertIn("健康體位", page)
         self.assertIn("維持均衡飲食", page)
 
@@ -43,10 +44,10 @@ class BmiAppTests(unittest.TestCase):
                 self.assertNotIn("YOUR RESULT", page)
 
     def test_input_is_escaped(self):
-        response = self.client.post("/", data={"height": '<script>alert(1)</script>', "weight": "65"})
+        response = self.client.post("/", data={"name": '<script>alert(1)</script>', "height": "170", "weight": "65"})
         page = response.get_data(as_text=True)
         self.assertNotIn("<script>", page)
-        self.assertIn("請輸入大於 0", page)
+        self.assertIn("&lt;script&gt;alert(1)&lt;/script&gt;", page)
 
 
 if __name__ == "__main__":
