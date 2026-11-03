@@ -21,7 +21,7 @@ BMI = 體重（公斤）÷ 身高（公尺）²。分類採臺灣成人體位參
 
 這只是成人體位參考，不能取代專業醫療評估，也不適用於兒童、青少年或孕婦。
 
-執行測試：`python -m unittest discover -s tests`
+執行測試：`python -m unittest discover -s tests`。測試分為 `tests/test_bmi.py` 的 BMI 純函式單元測試，以及 `tests/test_routes.py` 的 Flask 路由整合測試。
 
 ## 部署到 Azure Web App
 
