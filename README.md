@@ -25,7 +25,7 @@ BMI = 體重（公斤）÷ 身高（公尺）²。分類採臺灣成人體位參
 
 ## 部署到 Azure Web App
 
-`.github/workflows/deploy-azure.yml` 在 `main` 分支的應用程式、測試或 workflow 異動時執行，也可以從 GitHub Actions 手動觸發。流程會在 Windows runner 上執行測試、下載官方 Python 3.14.8 可嵌入版本，將 Python 與相依套件一起部署到 `NTUSTweb00`（資源群組 `NTUSTlab2026`）。站點透過 `web.config` 的 IIS HttpPlatformHandler 啟動 `serve.py`，以 Waitress 提供 Flask 服務。
+`.github/workflows/deploy-azure.yml` 在 `main` 分支的應用程式、測試或 workflow 異動時執行，也可以從 GitHub Actions 手動觸發。流程會在 Windows runner 上執行測試、下載官方 Python 3.14.8 可嵌入版本，將 Python 與相依套件部署到 `staging` slot。`production` environment 審核通過後，Workflow 會使用 Azure CLI 將 `staging` slot 與 `production` slot swap。站點透過 `web.config` 的 IIS HttpPlatformHandler 啟動 `serve.py`，以 Waitress 提供 Flask 服務。
 
 此方法使用**隨部署包提供的 Python**，不依賴 Windows App Service 內建 Python 執行環境；HttpPlatformHandler 必須在目標站點可用。`NTUSTweb00` 目前是 Windows Web App，部署時會確認作業系統。
 
@@ -34,3 +34,13 @@ BMI = 體重（公斤）÷ 身高（公尺）²。分類採臺灣成人體位參
 - Repository secret `AZURE_CREDENTIALS`：Azure 服務主體的 `clientId`、`clientSecret`、`subscriptionId`、`tenantId` 組成的 JSON。此 Secret 已設定，不要把內容寫進程式碼。
 
 請確認該服務主體對 `NTUSTweb00` 具有部署權限（例如該站點的 **Website Contributor**）。推送符合上述條件的 `main` 分支異動，或從 GitHub Actions 手動執行工作流程即可部署。
+
+首次設定藍綠部署時，請完成以下項目：
+
+1. 在 Azure App Service `NTUSTweb00` 建立名為 `staging` 的 deployment slot。
+2. 在 GitHub **Settings → Environments** 建立 `staging` 和 `production`。
+3. 在 `production` environment 設定 **Required reviewers**；`staging` 不需要審核。
+4. 在 GitHub Actions 的 Repository variables 設定 `AZURE_WEBAPP_NAME` 和 `AZURE_RESOURCE_GROUP`。
+5. 確認 `AZURE_CREDENTIALS` 是 Repository secret，且服務主體具有 App Service 的部署權限。
+
+執行後，GitHub Actions 應先完成 `deploy` job，將版本部署到 staging；`swap` job 會在 production reviewer 核准前暫停，核准後才將 staging 內容切換至正式環境。
