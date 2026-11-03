@@ -5,6 +5,7 @@ on:
     branches: [dev]
     paths:
       - app.py
+      - bmi.py
       - serve.py
       - web.config
       - requirements.txt
